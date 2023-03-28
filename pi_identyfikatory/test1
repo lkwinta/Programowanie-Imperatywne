@@ -1,0 +1,55 @@
+int main() {
+    int c;
+//      int line_comment_counter = 0;
+    int block_comment_counter = 0;
+//      int state = 0;
+
+    while ((c = getchar()) != EOF) {
+        if (state & IN_LINE_COMMENT) {
+            if (c == '\n') {
+                state &= ~IN_LINE_COMMENT; // end of line comment
+            }
+            continue;
+        }
+        if (state & IN_BLOCK_COMMENT) {
+            if (c != '*') continue;
+            int c_next = getchar();
+            if (c_next == '/') {
+                state &= ~IN_BLOCK_COMMENT; // end of block comment
+            } else {
+                ungetc(c_next, stdin);
+            }
+            /* continue; */
+        }
+/*/*/// b1 l1 */
+
+/*//b2*/
+
+//  l2 /* l2  */ l2
+
+//*//*/ l3
+
+/* b3 /* b3  // b3  */
+
+/*  b4
+//  b4
+*/
+        if (c == '/') {
+            int c_next = getchar();
+            if (c_next == '/') {
+                state |= IN_LINE_COMMENT; // line comment begins
+                ++line_comment_counter;
+            } else if (c_next == '*') {
+                state |= IN_BLOCK_COMMENT; // block comment begins
+                ++block_comment_counter;
+            } else {
+                ungetc(c_next, stdin);
+            }
+            continue;
+        }
+    }
+/*
+        printf("%d %d\n", block_comment_counter, line_comment_counter);
+        return 0;
+*/
+}

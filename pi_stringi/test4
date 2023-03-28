@@ -1,0 +1,10 @@
+int main() { // comment
+	printf ("Hello\n"); /* and another */
+	return 0;
+	/* and more
+	and more ... //
+	*/
+}
+/*
+// /* */
+*/a
