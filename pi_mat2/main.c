@@ -72,6 +72,9 @@ double gauss(double A[][SIZE], double b[], double x[], size_t n, double eps) {
             }
         }
 
+        if(A[indices[i]][i] == 0)
+            return 0;
+
         for(int j = i + 1; j < n; j++){
             double scalar = A[indices[j]][i] / A[indices[i]][i];
             for(int k = i; k < n; k++){
@@ -125,6 +128,9 @@ double matrix_inv(double A[][SIZE], double B[][SIZE], size_t n, double eps) {
                 det *= -1;
             }
         }
+
+        if(A[indices[i]][i] == 0)
+            return 0;
 
         for(int j = i + 1; j < n; j++){
             double scalar = A[indices[j]][i] / A[indices[i]][i];
