@@ -1,0 +1,26 @@
+
+int count[MAX_CHARS] = { 0 };
+
+int cmp (const void *a, const void *b) {
+    return count[*(int*)a] - count[*(int*)b];
+}
+
+int main() {
+    int indices[MAX_CHARS];
+    for (int i = 0; i < MAX_CHARS; ++i) {
+        indices[i] = i;
+    }
+
+    int c;
+    while ((c = getchar()) != EOF) {
+        ++count[c & 0xff];
+    }
+
+    qsort(indices, MAX_CHARS, sizeof(int), cmp);
+
+    for (int i = 0; i < MAX_CHARS; ++i) {
+        printf("%4d %4d\n", indices[i], count[indices[i]]);
+    }
+
+    return 0;
+}

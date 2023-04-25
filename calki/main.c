@@ -26,7 +26,6 @@ double f_exp(double x) {  // Przyklad funkcji podcalkowej
 }
 
 double f_trig(double x) {  // Przyklad funkcji podcalkowej
-#warning maybe -1
     return x*tan(x);
 }
 
@@ -170,39 +169,52 @@ double dbl_integr(Func2vFp f, double x1, double x2, int nx, double y1, double y2
     return dx*dy*integral;
 }
 
+
 // Oblicza kwadrature prostokatow midpoint dla calki podwojnej nad obszarem normalnym wzgledem osi 0x
 double dbl_integr_normal_1(Func2vFp f, double x1, double x2, int nx, double hy, Func1vFp fg, Func1vFp fh)  {
-    double dx = (x2 - x1)/(double)nx;
+    double dx = (x2 - x1)/nx;
 
     double integral = 0;
 
     for(int x = 0; x < nx; x++){
-        double xi = x1 + x*dx + 0.5*dx;
+        double xi = x1 + (x+0.5)*dx;
 
         int ny = (int)ceil((fh(xi) - fg(xi))/hy);
+        double dy = (fh(xi) - fg(xi))/ny;
 
-        for(int y = 1; y <= ny; y++){
-            integral += f(x1 + x*dx + 0.5*dx, fg(xi) + y*hy + 0.5*hy);
+        for(int y = 0; y < ny; y++){
+            integral += dy*dx*f(xi, fg(xi) + y*dy + 0.5*dy);
         }
     }
 
-    return dx*hy*integral;
+    return integral;
 }
 
 // Oblicza kwadrature prostokatow leftpoint dla calki podwojnej nad obszarami normalnymi wzgledem osi 0x
 double dbl_integr_normal_n(Func2vFp f, double x1, double x2, int nx, double y1, double y2, int ny, Func1vFp fg, Func1vFp fh)  {
     double dx = (x2 - x1)/nx;
     double dy = (y2 - y1)/ny;
+
     double integral = 0;
 
     for(int x = 0; x < nx; x++){
+        double xi = x1 + x*dx;
 
+        double _y1 = fmax(y1, fg(xi));
+        double _y2 = fmin(y2, fh(xi));
 
-        for(int y = 0; y < ny; y++){
+        int _ny = (int)ceil((_y2 - _y1)/dy);
+        double _dy = (_y2 - _y1)/_ny;
 
+        for (int y = 0; y < _ny; y++) {
+            double yi = _y1 + y * _dy;
+
+            if (fg(xi) <= yi && yi <= fh(xi))
+                integral += dx * _dy * f(xi, yi);
         }
     }
 
+    return integral;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -212,14 +224,14 @@ typedef double (*FuncNvFp)(const double*, int);
 typedef int (*BoundNvFp)(const double*, int);
 
 // Przykladowa funkcja trzech zmiennych:
+// sample function of three variables
 double func3v(const double v[], int n) {
-    return v[0]-v[1]+2*v[2];
+    return v[0] - v[1] + 2*v[2];
 }
 
-// Przykładowy predykat w przestrzeni 3-wymiarowej
-int bound3v(const double v[], int n) {
-    if(v[0]>0 && v[0]<0.5 && v[1]*v[1]+(v[2]-1)*(v[2]-1)<1) return 1;   // walec
-    return 0;
+// sample predicate in 3D
+int bound3v(const double v[], int n) { // a cylinder
+    return v[0] > 0 && v[0] < 0.5 && v[1]*v[1] + (v[2]-1)*(v[2]-1) < 1;
 }
 
 // Przykladowa funkcja n zmiennych:
@@ -236,16 +248,60 @@ int boundNv(const double v[], int n) {
     return 1;
 }
 
-// Obliczanie calek wielokrotnych
+/// Obliczanie calek wielokrotnych
 
 // Oblicza calke potrojna "nad" prostopadloscianem z predykatem wykluczajacym jego czesci (jezeli boundary != NULL).
 // Metoda prostokatow wstecz (rightpoint) wzdluz kazdej zmiennej.
 double trpl_quad_rect(FuncNvFp f, const double variable_lim[][2], const int tn[], BoundNvFp boundary) {
+    double dx = (variable_lim[0][1] - variable_lim[0][0])/tn[0];
+    double dy = (variable_lim[1][1] - variable_lim[1][0])/tn[1];
+    double dz = (variable_lim[2][1] - variable_lim[2][0])/tn[2];
+
+    double integral = 0;
+
+    for(int x = 0; x < tn[0]; x++){
+        double xi = variable_lim[0][0] + (x + 1)*dx;
+        for(int y = 0; y < tn[1]; y++){
+            double yi = variable_lim[1][0] + (y + 1)*dy;
+            for(int z = 0; z < tn[2]; z++){
+                double zi = variable_lim[2][0] + (z + 1)*dz;
+
+                double v[3] =  {xi, yi, zi};
+
+                if((boundary != NULL && boundary(v, 3) != 0 ) || boundary == NULL)
+                    integral += dx*dy*dz*f(v, 3);
+            }
+        }
+    }
+
+    return integral;
 }
 
 // Oblicza calke wielokrotna (funkcji n zmiennych) "nad" n wymiarowym hiperprostopadloscianem z predykatem wykluczajacym jego czesci (jezeli boundary != NULL).
 // Metoda prostokatow midpoint wzdluz kazdej zmiennej.
 void recur_quad_rect_mid(double *psum, FuncNvFp f, int variable_no, double tvariable[], const double variable_lim[][2], const int tn[], int level, BoundNvFp boundary) {
+    if(variable_no == level){
+        double v[variable_no];
+        for(int i = 0; i < variable_no; i++){
+            v[i] = tvariable[i];
+        }
+        double res = 0;
+        if((boundary != NULL && boundary(v, variable_no) != 0 ) || boundary == NULL)
+            res = f(v, variable_no);
+
+        for(int i = 0; i < variable_no; i++){
+            res *= (variable_lim[i][1] - variable_lim[i][0])/tn[i];
+        }
+
+        *psum += res;
+    }
+    else{
+        double dx = (variable_lim[level][1] - variable_lim[level][0])/tn[level];
+        for(int i = 0; i < tn[level]; i++){
+            tvariable[level] = variable_lim[level][0] + (i+0.5)*dx;
+            recur_quad_rect_mid(psum, f, variable_no, tvariable, variable_lim, tn, level + 1, boundary);
+        }
+    }
 }
 
 int main(void) {
@@ -322,6 +378,7 @@ int main(void) {
             recur_quad_rect_mid(&sum, funcNv, n, tvariable, variable_lim, tn, 0, flag ? boundNv
                                                                                       : NULL);//        recur_quad_rect_mid(&sum, func3v_1, n, tvariable, variable_lim, tn, 0, flag?bound3v_2:NULL);
 //        recur_quad_rect(&sum, funcNv, n, tvariable, variable_lim, tn, tqr, 0, flag?boundNv:NUL
+            printf("%.5f\n", sum);
             break;
         default:
             printf("Numer testu spoza zakresu [1, 7] %d", to_do);
