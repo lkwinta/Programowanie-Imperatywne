@@ -259,12 +259,16 @@ double trpl_quad_rect(FuncNvFp f, const double variable_lim[][2], const int tn[]
 
     double integral = 0;
 
+    double xi = variable_lim[0][0];
     for(int x = 0; x < tn[0]; x++){
-        double xi = variable_lim[0][0] + (x + 1)*dx;
+        xi += dx;
+        double yi = variable_lim[1][0];
+
         for(int y = 0; y < tn[1]; y++){
-            double yi = variable_lim[1][0] + (y + 1)*dy;
+            yi += dy;
+            double zi = variable_lim[2][0];
             for(int z = 0; z < tn[2]; z++){
-                double zi = variable_lim[2][0] + (z + 1)*dz;
+                zi += dz;
 
                 double v[3] =  {xi, yi, zi};
 
