@@ -45,65 +45,108 @@ void read_mat(int rows, int cols, int *t) {
     }
 }
 
-
 int read_char_lines(char *array[]) {
-}
-
-void write_char_line(char *array[], int n) {
-}
-
-void delete_lines(char *array[]) {
-}
-
-int read_int_lines_cont(int *ptr_array[]) {
-    int elements_counter = 1;
-    int lines_counter = 0;
-    int buffer_counter = 0;
-
     char buffer[BUF_SIZE] = {0};
-
-    int* ptr = malloc(sizeof(int));
+    int lines_counter = 0;
 
     while(!feof(stdin)){
-        char c = fgetc(stdin);
+        gets(buffer);
+        int length = strlen(buffer);
 
-        ptr_array[lines_counter] = &ptr[elements_counter-1];
-
-        while(c != '\n'){
-            if(c == ' '){
-                int result = atoi(buffer);
-                memset(buffer, 0, BUF_SIZE);
-
-                ptr = realloc(ptr,  (elements_counter)*sizeof(int));
-
-                ptr[elements_counter-1] = result;
-
-                buffer_counter = 0;
-                elements_counter++;
-            } else {
-                buffer[buffer_counter] = c;
-                buffer_counter++;
-            }
-
-            c = fgetc(stdin);
-        }
-
-        int result = atoi(buffer);
-        memset(buffer, 0, BUF_SIZE);
-
-        ptr = realloc(ptr,  (elements_counter)*sizeof(int));
-
-        ptr[elements_counter-1] = result;
-
-        buffer_counter = 0;
-        elements_counter++;
+        array[lines_counter] = malloc((length + 1) * sizeof(char));
+        memcpy(array[lines_counter], buffer, length + 1);
 
         lines_counter++;
     }
+
+    array[lines_counter] = NULL;
+
+    return lines_counter;
+}
+
+void write_char_line(char *array[], int n) {
+    printf("%s \n", array[n]);
+}
+
+void delete_lines(char *array[]) {
+    int index = 0;
+
+    while(array[index] != NULL)
+        free(array[index++]);
+}
+
+int* read_int_line(int* size){
+    int* line = NULL;
+    *size = 0;
+    char buffer[TAB_SIZE] = {0};
+    int buffer_counter = 0;
+
+    char c = fgetc(stdin);
+
+    while(!feof(stdin) && c != '\n'){
+        if(c == ' '){
+            int result = atoi(buffer);
+            memset(buffer, 0, BUF_SIZE);
+
+            line = realloc(line, (*size + 1)*sizeof(int));
+
+            line[*size] = result;
+
+            buffer_counter = 0;
+            (*size)++;
+        } else {
+            buffer[buffer_counter] = c;
+            buffer_counter++;
+        }
+
+        c = fgetc(stdin);
+    }
+
+    if(buffer_counter == 0)
+        return NULL;
+
+    int result = atoi(buffer);
+    line = realloc(line,  (*size + 1)*sizeof(int));
+    line[*size] = result;
+    (*size)++;
+
+    return line;
+}
+
+int read_int_lines_cont(int *ptr_array[]) {
+    int elements_counter = 0;
+    int lines_counter = 0;
+
+    int* tab = ptr_array[0];
+
+    while(!feof(stdin)){
+        int line_size = 0;
+        int* line_array = read_int_line(&line_size);
+
+        if(line_array == NULL)
+            break;
+
+        memcpy(&tab[elements_counter], line_array, sizeof(int)*line_size);
+        free(line_array);
+
+        ptr_array[lines_counter] = &tab[elements_counter];
+
+        elements_counter += line_size;
+        lines_counter++;
+    }
+
+    ptr_array[lines_counter] = ptr_array[0] + elements_counter;
+
     return lines_counter;
 }
 
 void write_int_line_cont(int *ptr_array[], int n) {
+    int* temp_ptr = ptr_array[n];
+
+    while(temp_ptr != ptr_array[n + 1]){
+        printf("%i ", *temp_ptr);
+        temp_ptr++;
+    }
 }
 
 typedef struct {
@@ -113,18 +156,58 @@ typedef struct {
 } line_type;
 
 int read_int_lines(line_type lines_array[]) {
+    int lines_counter = 0;
+
+    while(!feof(stdin)){
+        int line_size = 0;
+        int* line_array = read_int_line(&line_size);
+
+        if(line_array == NULL)
+            return lines_counter;
+
+        lines_array[lines_counter].values = malloc(sizeof(int)*line_size);
+        lines_array[lines_counter].len = line_size;
+
+        double avg = 0;
+        for(int i = 0; i < line_size; i++){
+            lines_array[lines_counter].values[i] = line_array[i];
+            avg += line_array[i];
+        }
+        lines_array[lines_counter].average = avg/line_size;
+
+        free(line_array);
+        lines_counter++;
+    }
+
+    return lines_counter;
 }
 
 void write_int_line(line_type lines_array[], int n) {
+    for(int i = 0; i < lines_array[n].len; i++){
+        printf("%i ", lines_array[n].values[i]);
+    }
+    printf("\n%.2lf \n", lines_array[n].average);
 }
 
 void delete_int_lines(line_type array[], int line_count) {
+    for(int i = 0; i < line_count; i++)
+        free(array[i].values);
 }
 
-int cmp (const void *a, const void *b) {
+int cmp (const void *_a, const void *_b) {
+    line_type a = *((line_type*)_a);
+    line_type b = *((line_type*)_b);
+
+    if(a.average < b.average)
+        return -1;
+    else if(a.average > b.average)
+        return 1;
+    else
+        return 0;
 }
 
 void sort_by_average(line_type lines_array[], int line_count) {
+    qsort(lines_array, line_count, sizeof(line_type), cmp);
 }
 
 typedef struct {
@@ -132,21 +215,59 @@ typedef struct {
 } triplet;
 
 int read_sparse(triplet *triplet_array, int n_triplets) {
+    for(int i = 0; i < n_triplets; i++){
+        scanf("%i %i %i", &triplet_array[i].r, &triplet_array[i].c, &triplet_array[i].v);
+    }
+
+    return n_triplets;
 }
 
 int cmp_triplets(const void *t1, const void *t2) {
+    triplet a = *((triplet*)t1);
+    triplet b = *((triplet*)t2);
+
+    if(a.r < b.r)
+        return -1;
+    if(a.r > b.r)
+        return 1;
+    if(a.c < b.c)
+        return -1;
+    if(a.c > b.c)
+        return 1;
+
+    return 0;
 }
 
 void make_CSR(triplet *triplet_array, int n_triplets, int rows, int *V, int *C, int *R) {
+    qsort(triplet_array, n_triplets, sizeof(triplet), cmp_triplets);
+    for(int i = 0; i < n_triplets; i++){
+        V[i] = triplet_array[i].v;
+        C[i] = triplet_array[i].c;
+        R[i] = i;
+    }
+    R[rows] = n_triplets;
 }
 
 void multiply_by_vector(int rows, const int *V, const int *C, const int *R, const int *x, int *y) {
+    for(int i = 0; i < rows; i++){
+        y[i] = 0;
+        for(int j = R[i]; j <= R[i+1] - 1; j++){
+            y[i] += V[j]*x[C[j]];
+        }
+    }
 }
 
 void read_vector(int *v, int n) {
+    for(int i = 0; i < n; i++){
+        scanf("%i", &v[i]);
+    }
 }
 
 void write_vector(int *v, int n) {
+    for(int i = 0; i < n; i++)
+        printf("%i ", v[i]);
+
+    printf("\n");
 }
 
 int read_int() {
