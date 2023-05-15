@@ -50,7 +50,7 @@ int read_char_lines(char *array[]) {
     int lines_counter = 0;
 
     while(!feof(stdin)){
-        gets(buffer);
+        fgets(buffer, BUF_SIZE, stdin);
         int length = strlen(buffer);
 
         array[lines_counter] = malloc((length + 1) * sizeof(char));
@@ -240,12 +240,14 @@ int cmp_triplets(const void *t1, const void *t2) {
 
 void make_CSR(triplet *triplet_array, int n_triplets, int rows, int *V, int *C, int *R) {
     qsort(triplet_array, n_triplets, sizeof(triplet), cmp_triplets);
+
+    memset(R, 0, (rows+1)*sizeof(int));
     for(int i = 0; i < n_triplets; i++){
         V[i] = triplet_array[i].v;
         C[i] = triplet_array[i].c;
-        R[i] = i;
+        for(int k = triplet_array[i].r + 1; k < rows + 1; k++)
+            R[k] += 1;
     }
-    R[rows] = n_triplets;
 }
 
 void multiply_by_vector(int rows, const int *V, const int *C, const int *R, const int *x, int *y) {
