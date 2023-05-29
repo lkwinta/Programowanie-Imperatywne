@@ -8,7 +8,7 @@
 #define MEMORY_ALLOCATION_ERROR  (-1)
 #define FILE_OPEN_ERROR          (-2)
 #define LIST_ERROR               (-3)
-#define TEST 1               // 1 dla testowania, 0 dla automatycznej oceny
+#define TEST 0               // 1 dla testowania, 0 dla automatycznej oceny
 
 typedef struct tagListElement {
     struct tagListElement *next;
@@ -90,6 +90,9 @@ void pushFront(List *list, void *data) {
     list_element->data = data;
 
     list->head = list_element;
+    if(list->size == 0)
+        list->tail = list_element;
+
     list->size++;
 }
 
@@ -99,7 +102,11 @@ void pushBack(List *list, void *data) {
     list_element->next = NULL;
     list_element->data = data;
 
-    list->tail->next = list_element;
+    if(list->size == 0)
+        list->head = list_element;
+    else
+        list->tail->next = list_element;
+
     list->tail = list_element;
     list->size++;
 }
@@ -112,14 +119,24 @@ void popFront(List *list) {
     ListElement* temp = list->head->next;
     free(list->head);
     list->head = temp;
+    list->size--;
 }
 
 // Odwraca kolejność elementów listy
 void reverse(List *list) {
-    ListElement* head_iterator = list->head;
-    ListElement* tail_iterator = list->tail;
+    ListElement* current = list->head;
+    ListElement* previous = NULL;
 
-    while ()
+    list->tail = list->head;
+
+    while (current != NULL){
+        ListElement* next = current->next;
+        current->next = previous;
+        previous = current;
+        current = next;
+    }
+
+    list->head = previous;
 }
 
 // Funkcje pomocnicze dla list uporzadkowanych
@@ -127,6 +144,17 @@ void reverse(List *list) {
 
 // Zwraca element w posortowanej liście, a jeżeli nie ma, to element poprzedzający (nie ma, to NULL)
 ListElement* findInsertionPoint(const List *list, ListElement *element) {
+    ListElement* insertion_position = NULL;
+    ListElement* current_position = list->head;
+
+    while(current_position != NULL){
+        if(list->compareData(current_position->data, element->data) <= 0)
+            insertion_position = current_position;
+
+        current_position = current_position->next;
+    }
+
+    return insertion_position;
 }
 
 
@@ -136,6 +164,27 @@ ListElement* findInsertionPoint(const List *list, ListElement *element) {
 // Jeżeli w liście takiego elementu nie ma, to nowy element jest tworzony
 // i dopisany do listy zachowując uporządkowanie listy.
 void insertInOrder(List *list, void *a) {
+    ListElement* list_element = safe_malloc(sizeof(ListElement));
+    list_element->next = NULL;
+    list_element->data = a;
+
+    ListElement* insertion_address = findInsertionPoint(list, list_element);
+    if(insertion_address == NULL) {
+        pushFront(list, a);
+        free(list_element);
+    } else {
+        if(list->compareData(insertion_address->data, list_element->data) == 0){
+            list->modifyData(insertion_address->data);
+            free(a);
+        } else {
+            if(list->tail == insertion_address)
+                list->tail = list_element;
+
+            list_element->next = insertion_address->next;
+            insertion_address->next = list_element;
+            list->size++;
+        }
+    }
 }
 
 
@@ -155,16 +204,30 @@ void pushBack_v0(List *list, void *data) {
 typedef int DataInt;
 
 void dump_int(const void *d) {
+    printf("%i ", *(DataInt*)d);
 }
 
 void free_int(void *d) {
+    free((DataInt*)d);
 }
 
-int cmp_int(const void *a, const void *b) {
+int cmp_int(const void *_a, const void *_b) {
+    DataInt a = *(DataInt*)_a;
+    DataInt b = *(DataInt*)_b;
+
+    if(a < b)
+        return -1;
+    if (a > b)
+        return 1;
+    return 0;
 }
 
 // Przydziela pamięć i zapisuje w niej daną o wartości v
 void *create_data_int(int v) {
+    DataInt* address = safe_malloc(sizeof(DataInt));
+    *address = v;
+
+    return address;
 }
 
 //////  Dla zadania 11.1.3 i 11.1.4
