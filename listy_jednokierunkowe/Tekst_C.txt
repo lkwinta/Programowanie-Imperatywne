@@ -1,0 +1,12 @@
+C is the most commonly used programming language for writing operating systems
+The first operating system written in C is Unix.
+Later operating systems like GNU/Linux were all written in C.
+Not only is C the language of operating systems,it is the precursor and inspiration for almost all of the most popular
+high-level languages available today.
+In fact, Perl, PHP, Python and Ruby are all written in C.
+By way of analogy, let's say that you were going to be learning Spanish,
+Italian, French, or Portuguese.
+Do you think knowing Latin would be helpful?
+Just as Latin was the basis of all of those languages,
+knowing C will enable you to understand and appreciate an entire family of programming languages
+built upon the traditions of C. Knowledge of C enables freedom.

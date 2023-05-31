@@ -117,7 +117,8 @@ void popFront(List *list) {
         return;
 
     ListElement* temp = list->head->next;
-    free(list->head);
+    list->freeData(list->head);
+
     list->head = temp;
     list->size--;
 }
@@ -157,7 +158,6 @@ ListElement* findInsertionPoint(const List *list, ListElement *element) {
     return insertion_position;
 }
 
-
 // Drugi parametr przekazuje do funkcji adres przydzielonej dla "nowych" danych pamięci.
 // Jeżeli takie dane są już w elemencie listy, to dane tego elementu są modyfikowane
 // funkcją wskazaną w polu modifyData, a pamięć "nowych" danych jest zwalniana.
@@ -174,8 +174,10 @@ void insertInOrder(List *list, void *a) {
         free(list_element);
     } else {
         if(list->compareData(insertion_address->data, list_element->data) == 0){
-            list->modifyData(insertion_address->data);
-            free(a);
+            if(list->modifyData != NULL) {
+                list->modifyData(insertion_address->data);
+            }
+            list->freeData(a);
         } else {
             if(list->tail == insertion_address)
                 list->tail = list_element;
@@ -192,6 +194,22 @@ void insertInOrder(List *list, void *a) {
 
 // Dodaje element na końcu listy bez korzystania z pola tail
 void pushBack_v0(List *list, void *data) {
+    ListElement* list_element = safe_malloc(sizeof(ListElement));
+    list_element->next = NULL;
+    list_element->data = data;
+
+    if(list->size == 0){
+        list->head = list_element;
+    } else {
+        ListElement* tail = list->head;
+        while(tail->next != NULL)
+            tail = tail->next;
+
+        tail->next = list_element;
+    }
+
+    list->tail = list_element;
+    list->size++;
 }
 
 
@@ -239,29 +257,68 @@ typedef struct DataWord {
 } DataWord;
 
 void dump_word (const void *d) {
+    DataWord* data = (DataWord*)d;
+
+    printf("%s ", data->word);
 }
 
 void free_word(void *d) {
+    free((DataWord*)d);
 }
 
-int cmp_word_alphabet(const void *a, const void *b) {
+int cmp_word_alphabet(const void *_a, const void *_b) {
+    DataWord* a = (DataWord*)_a;
+    DataWord* b = (DataWord*)_b;
+
+    return strcmp(a->word, b->word);
 }
 
-int cmp_word_counter(const void *a, const void *b) {
+int cmp_word_counter(const void *_a, const void *_b) {
+    DataWord* a = (DataWord*)_a;
+    DataWord* b = (DataWord*)_b;
+
+    if(a->counter < b->counter)
+        return -1;
+    if(a->counter > b->counter)
+        return 1;
+    return 0;
 }
 
 void modify_word(void *a) {
+    DataWord* data = (DataWord*)a;
+    data->counter++;
 }
 
 // Wypisz dane elementów spełniających warunek równości sprawdzany funkcją
 // wskazywaną w polu compareData nagłówka listy
 void dumpList_word_if(List *plist, int n) {
+    ListElement* element = plist->head;
+    DataWord cmp = {
+            NULL,
+            n};
+
+    while(element != NULL){
+        if(plist->compareData(element->data, &cmp) == 0)
+            dump_word(element->data);
+
+        element = element->next;
+    }
 }
 
 // Przydziela pamięć dla łańcucha string i struktury typu DataWord.
 // Do przydzielonej pamięci wpisuje odpowiednie dane.
 // Zwraca adres struktury.
 void *create_data_word(char *string, int counter) {
+    DataWord* new_data = malloc(sizeof(DataWord));
+
+    new_data->word = safe_strdup(string);
+    new_data->counter = counter;
+
+    for(int i = 0; new_data->word[i]; i++){
+        new_data->word[i] = tolower(new_data->word[i]);
+    }
+
+    return new_data;
 }
 
 //////////////////////////////////////////////////
