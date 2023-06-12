@@ -146,13 +146,6 @@ size_t digits(int n) {
     return (size_t)(log10(abs(n)) + 1);
 }
 
-/**
- *
-5
-12
-623 -14 733 29 22222 334 0 -12 -856 12345 1 -1
- * */
-
 // inserts 'value' to the node with the same digits' count
 // otherwise insert new node
 void put_in_order(List *list, int value) {
@@ -180,7 +173,7 @@ void put_in_order(List *list, int value) {
         while(pos < node->array_size && node->data[pos] < value)
             pos++;
 
-        node->data = realloc(node->data, sizeof(int) * (node->array_size + 1));
+        node->data = safe_realloc(node->data, sizeof(int) * (node->array_size + 1));
         node->array_size++;
 
         for(size_t i = node->array_size - 1; i > pos; i--)
