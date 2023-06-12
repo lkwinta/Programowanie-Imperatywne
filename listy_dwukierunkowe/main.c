@@ -177,7 +177,7 @@ void put_in_order(List *list, int value) {
         node->prev = temp;
     } else {
         size_t pos = 0;
-        while(node->data[pos] < value)
+        while(pos < node->array_size && node->data[pos] < value)
             pos++;
 
         node->data = realloc(node->data, sizeof(int) * (node->array_size + 1));
