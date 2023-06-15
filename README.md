@@ -6,7 +6,9 @@ Na systemie Linux jest szansa na błąd linkowania w rozwiązaniach korzystając
 CMakeLists.txt znajdującym się w danym folderze z rozwiązaniem należy dopisać następującą linijkę: </br>
 `target_link_libraries(<nazwa_podprojektu> m)` </br>
 Przykładowo plik z taką modyfikacją powinien wyglądać następująco:
-```
+```cmake
+#CMakeLists.txt
+
 cmake_minimum_required(VERSION 3.24)
 project(<nazwa_podprojektu> C)
 
