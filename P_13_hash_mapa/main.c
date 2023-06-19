@@ -96,26 +96,28 @@ size_t hash_base(int k, size_t size) {
 }
 
 void rehash(hash_table *p_table) {
+    ht_element* temp_array = p_table->ht;
+
     size_t new_size = 2*p_table->size;
     ht_element* new_table = calloc(new_size, sizeof(ht_element));
 
-    free_table(p_table);
-
     for(int i = 0; i < p_table->size; i++){
-        ht_element* head = p_table->ht[i].next;
+        ht_element* head = temp_array[i].next;
 
         while(head != NULL){
             size_t index = p_table->hash_function(head->data, new_size);
 
-            ht_element* to_insert = &new_table[index];
-            while(to_insert->next != NULL)
-                to_insert = to_insert->next;
+            ht_element* to_insert = malloc(sizeof(ht_element));
+            to_insert->data = head->data;
+            to_insert->next = new_table[index].next;
 
-            to_insert->next = head;
+            new_table[index].next = to_insert;
 
             head = head->next;
         }
     }
+
+    free_table(p_table);
 
     p_table->ht = new_table;
     p_table->size = new_size;
