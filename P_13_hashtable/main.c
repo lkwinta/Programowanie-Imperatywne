@@ -96,13 +96,11 @@ size_t hash_base(int k, size_t size) {
 }
 
 void rehash(hash_table *p_table) {
-    ht_element* temp_array = p_table->ht;
-
     size_t new_size = 2*p_table->size;
     ht_element* new_table = calloc(new_size, sizeof(ht_element));
 
     for(int i = 0; i < p_table->size; i++){
-        ht_element* head = temp_array[i].next;
+        ht_element* head = p_table->ht[i].next;
 
         while(head != NULL){
             size_t index = p_table->hash_function(head->data, new_size);
@@ -113,11 +111,14 @@ void rehash(hash_table *p_table) {
 
             new_table[index].next = to_insert;
 
+            ht_element* temp = head;
             head = head->next;
+
+            free(temp);
         }
     }
 
-    free_table(p_table);
+    free(p_table->ht);
 
     p_table->ht = new_table;
     p_table->size = new_size;
@@ -139,7 +140,13 @@ ht_element *find_previous(hash_table *p_table, data_union data) {
 
 // return pointer to element with given value
 ht_element *get_element(hash_table *p_table, data_union *data) {
-    return p_table->ht[p_table->hash_function(*data, p_table->size)].next;
+    size_t index = p_table->hash_function(*data, p_table->size);
+    ht_element* head = p_table->ht[index].next;
+
+    while(head != NULL && p_table->compare_data(head->data, *data) != 0)
+        head = head->next;
+
+    return head;
 }
 
 // insert element
@@ -288,8 +295,6 @@ data_union create_data_word(void *value) {
     for(int i = 0; data_word->word[i]; i++){
         data_word->word[i] = tolower(data_word->word[i]);
     }
-
-    printf("%s \n", data_word->word);
 
     return (data_union){.ptr_data = data_word};
 }
