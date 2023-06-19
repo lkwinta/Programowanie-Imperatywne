@@ -81,7 +81,7 @@ void free_table(hash_table* p_table) {
             ht_element* temp = head;
             head = head->next;
 
-            free_element(p_table->free_data, head);
+            free_element(p_table->free_data, temp);
         }
     }
 
@@ -137,7 +137,7 @@ ht_element *find_previous(hash_table *p_table, data_union data) {
 
 // return pointer to element with given value
 ht_element *get_element(hash_table *p_table, data_union *data) {
-    return &p_table->ht[p_table->hash_function(*data, p_table->size)];
+    return p_table->ht[p_table->hash_function(*data, p_table->size)].next;
 }
 
 // insert element
@@ -245,9 +245,9 @@ typedef struct DataWord {
 } DataWord;
 
 void dump_word(data_union data) {
-    DataWord data_word = *(DataWord*)data.ptr_data;
+    DataWord* data_word = (DataWord*)data.ptr_data;
 
-    printf("%s %i", data_word.word, data_word.counter);
+    printf("%s %i", data_word->word, data_word->counter);
 }
 
 void free_word(data_union data) {
@@ -279,7 +279,7 @@ void modify_word(data_union *data) {
 }
 
 data_union create_data_word(void *value) {
-    DataWord* data_word = calloc(1, sizeof(DataWord));
+    DataWord* data_word = malloc(sizeof(DataWord));
     data_word->word = strdup((char*)value);
     data_word->counter = 1;
 
@@ -287,23 +287,20 @@ data_union create_data_word(void *value) {
         data_word->word[i] = tolower(data_word->word[i]);
     }
 
-    if(value != NULL) {
-        ((data_union *) value)->ptr_data = data_word;
-    }
+    printf("%s \n", data_word->word);
 
     return (data_union){.ptr_data = data_word};
 }
 
 // read text, parse it to words, and insert these words to the hashtable
 void stream_to_ht(hash_table *p_table, FILE *stream) {
-    data_union data_union;
-    char *p, buf[BUFFER_SIZE];
-    char delimits[] = " \r\t\n.,?!-";
+    char *p, buf[BUFFER_SIZE] = {0};
+    char delimits[] = " \r\t\n.,?!-;";
 
     while(fgets(buf,BUFFER_SIZE,stream)) {
         p = strtok(buf, delimits);
         while(p) {
-            data_union = create_data_word(p);
+            data_union data_union = create_data_word(p);
             insert_element(p_table, &data_union);
 
             p = strtok(NULL, delimits);
