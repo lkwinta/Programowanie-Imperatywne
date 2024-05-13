@@ -12,4 +12,4 @@ configure_file( test ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
 add_executable(P_4_1_stringi main.c)
 
-install(TARGETS P_4_1_stringi RUNTIME DESTINATION bin)
+install(TARGETS P_4_1_stringi RUNTIME DESTINATION bin) 
