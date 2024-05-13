@@ -5,4 +5,4 @@ set(CMAKE_C_STANDARD 99)
 
 add_executable(P_6_relacje main.c)
 
-install(TARGETS P_6_relacje RUNTIME DESTINATION bin)
+install(TARGETS P_6_relacje RUNTIME DESTINATION bin) 
