@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BASE_CAPACITY 5
+#define BASE_CAPACITY 5 
 
 typedef struct {
     char* name;
