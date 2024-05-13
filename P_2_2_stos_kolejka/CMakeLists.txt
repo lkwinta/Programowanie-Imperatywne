@@ -5,4 +5,4 @@ set(CMAKE_C_STANDARD 99)
 
 add_executable(P_2_2_stos_kolejka main.c)
 
-install(TARGETS P_2_2_stos_kolejka RUNTIME DESTINATION bin)
+install(TARGETS P_2_2_stos_kolejka RUNTIME DESTINATION bin) 
