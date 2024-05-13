@@ -28,3 +28,4 @@ add_subdirectory(kolokwium_2_2023_zadanie1)
 add_subdirectory(kolokwium_2_2023_zadanie2)
 add_subdirectory(kolokwium_2023_zadanie1)
 add_subdirectory(kolokwium_2023_zadanie2) 
+ 
