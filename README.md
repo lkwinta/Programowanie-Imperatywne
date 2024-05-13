@@ -18,3 +18,4 @@ add_executable(<nazwa_podprojektu> main.c)
 target_link_libraries(<nazwa_podprojektu> m)
 install(TARGETS <nazwa_podprojektu> RUNTIME DESTINATION bin)
 ```  
+ 
