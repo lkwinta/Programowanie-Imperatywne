@@ -5,4 +5,4 @@ set(CMAKE_C_STANDARD 99)
 
 add_executable(kolokwium_2022_zadanie3 main.c)
 
-install(TARGETS kolokwium_2022_zadanie3 RUNTIME DESTINATION bin)
+install(TARGETS kolokwium_2022_zadanie3 RUNTIME DESTINATION bin) 
