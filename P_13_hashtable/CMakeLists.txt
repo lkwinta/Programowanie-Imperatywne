@@ -8,4 +8,4 @@ target_link_libraries(P_13_hashtable m)
 
 install(TARGETS P_13_hashtable RUNTIME DESTINATION bin)
 
-configure_file(test3 ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+configure_file(test3 ${CMAKE_CURRENT_BINARY_DIR} COPYONLY) 
