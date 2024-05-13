@@ -11,4 +11,4 @@ configure_file(test4 ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
 add_executable(P_4_2_identyfikatory main.c)
 
-install(TARGETS P_4_2_identyfikatory RUNTIME DESTINATION bin)
+install(TARGETS P_4_2_identyfikatory RUNTIME DESTINATION bin) 
